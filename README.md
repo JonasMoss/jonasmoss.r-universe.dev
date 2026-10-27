@@ -25,6 +25,12 @@ install.packages(
 Build status: <https://jonasmoss.r-universe.dev/builds>.
 The compiled `magmaanlab` package requires C++23 when installed from source.
 
+On a first publication, `magmaan` can fail while `magmaanlab` is still building.
+The manual **Retry magmaan after magmaanlab publishes** GitHub Actions workflow
+waits for the requested lab version in the source repository index, then requests
+a retry through the dashboard's retry API. It stops after roughly two hours if
+the dependency has not appeared; inspect the lab build before running it again.
+
 For covsim, declare `magmaan` in `Suggests` and add:
 
 ```dcf

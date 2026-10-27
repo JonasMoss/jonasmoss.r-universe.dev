@@ -1,0 +1,61 @@
+name: Retry magmaan after magmaanlab publishes
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Paired package version to wait for and retry
+        required: true
+        default: '0.2.1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: retry-magmaan
+  cancel-in-progress: false
+
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PACKAGE_VERSION: ${{ inputs.version }}
+    steps:
+      - name: Wait for the dependency, then retry the failed build
+        shell: python
+        run: |
+          import os
+          import re
+          import time
+          import urllib.error
+          import urllib.request
+
+          version = os.environ['PACKAGE_VERSION']
+          if not re.fullmatch(r'[0-9]+(?:[.-][0-9]+)*', version):
+              raise SystemExit('Invalid package version')
+          index_url = 'https://jonasmoss.r-universe.dev/src/contrib/PACKAGES'
+          for attempt in range(110):
+              try:
+                  with urllib.request.urlopen(index_url, timeout=30) as response:
+                      index = response.read().decode()
+                  entries = [dict(line.split(': ', 1) for line in block.splitlines()
+                                  if ': ' in line and not line.startswith(' '))
+                             for block in index.split('\n\n')]
+                  ready = any(entry.get('Package') == 'magmaanlab'
+                              and entry.get('Version') == version for entry in entries)
+              except (urllib.error.URLError, TimeoutError) as error:
+                  print(f'Index temporarily unavailable: {error}', flush=True)
+                  ready = False
+              if ready:
+                  break
+              print(f'Waiting for magmaanlab {version}: check {attempt + 1}/110', flush=True)
+              time.sleep(60)
+          else:
+              raise SystemExit('Dependency did not publish in time; inspect the magmaanlab build')
+
+          retry_url = f'https://jonasmoss.r-universe.dev/api/packages/magmaan/{version}/failure'
+          request = urllib.request.Request(retry_url, method='PATCH')
+          with urllib.request.urlopen(request, timeout=60) as response:
+              print(response.read().decode(), flush=True)
+          print('Retry requested. Check https://jonasmoss.r-universe.dev/builds', flush=True)
