@@ -1,0 +1,34 @@
+[
+  {
+    "package": "semTests",
+    "url": "https://github.com/JonasMoss/semtests"
+  },
+  {
+    "package": "kdensity",
+    "url": "https://github.com/JonasMoss/kdensity"
+  },
+  {
+    "package": "publipha",
+    "url": "https://github.com/JonasMoss/publipha"
+  },
+  {
+    "package": "univariateML",
+    "url": "https://github.com/JonasMoss/univariateml"
+  },
+  {
+    "package": "nakagami",
+    "url": "https://github.com/JonasMoss/nakagami"
+  },
+  {
+    "package": "magmaanlab",
+    "url": "https://github.com/JonasMoss/magmaan",
+    "subdir": "r-package",
+    "branch": "*release"
+  },
+  {
+    "package": "magmaan",
+    "url": "https://github.com/JonasMoss/magmaan",
+    "subdir": "r-magmaan",
+    "branch": "*release"
+  }
+]
